@@ -12,7 +12,7 @@ services:
   - type: web
     name: novatech-sso
     env: docker  # Render requires 'docker' for Java applications in Blueprints
-    plan: starter  # Change to 'standard' or higher for production workloads
+    plan: free  # Free tier - app spins down after 15 min inactivity
     region: oregon  # Change to your preferred region (oregon, frankfurt, singapore, ohio)
     
     # Build and start are handled by Dockerfile
@@ -41,13 +41,14 @@ services:
         value: true
       
       # Performance Settings
+      # Reduced for free tier database connection limits
       - key: DB_POOL_SIZE
-        value: 20
+        value: 5
       
       # Java Options for Production
-      # CRITICAL: On Starter plan (512MB RAM), Xmx must be <512MB to leave room for OS & Metaspace
+      # Free tier has 512MB RAM - Xmx set to 300m to prevent OOM crashes
       - key: JAVA_OPTS
-        value: -Xmx384m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+        value: -Xmx300m -Xms128m -XX:+UseG1GC
     
     # Health Check Configuration
     healthCheckPath: /login
@@ -63,7 +64,7 @@ databases:
   - name: novatech-db
     databaseName: novatech_db
     user: novatech_user
-    plan: starter  # Change to 'standard' for production (includes daily backups)
+    plan: free  # Free tier - valid for 90 days, then expires
     region: oregon  # Must match web service region for best performance
     
     # PostgreSQL Version
