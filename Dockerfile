@@ -11,6 +11,9 @@ COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
+# FIX: Grant execution permission to mvnw (Windows doesn't set this)
+RUN chmod +x mvnw
+
 # Download dependencies (cached layer if pom.xml doesn't change)
 RUN ./mvnw dependency:go-offline -B
 
@@ -38,7 +41,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/login || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/login || exit 1
 
 # Use shell form to allow environment variable expansion
 ENTRYPOINT sh -c "java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"
