@@ -1,0 +1,78 @@
+# =============================================================================
+# Render Blueprint for NovaTech SSO Management System
+# =============================================================================
+# This file defines the infrastructure for deploying to Render
+# Custom Domain: pratiktech.cloud
+# =============================================================================
+
+services:
+  # =============================================================================
+  # Web Service - NovaTech Application
+  # =============================================================================
+  - type: web
+    name: novatech-sso
+    runtime: java
+    plan: starter  # Change to 'standard' or higher for production workloads
+    region: oregon  # Change to your preferred region (oregon, frankfurt, singapore, ohio)
+    
+    # Build Configuration
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -jar target/service-app-0.0.1-SNAPSHOT.jar
+    
+    # Environment Variables
+    envVars:
+      # Application Profile
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      
+      # Database Connection (auto-populated by Render)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: novatech-db
+          property: connectionString
+      
+      # Custom Domain Configuration
+      - key: CUSTOM_DOMAIN
+        value: pratiktech.cloud
+      
+      - key: ALLOWED_ORIGINS
+        value: https://pratiktech.cloud,https://www.pratiktech.cloud
+      
+      # Security Settings
+      - key: COOKIE_SECURE
+        value: true
+      
+      # Performance Settings
+      - key: DB_POOL_SIZE
+        value: 20
+      
+      # Java Options for Production
+      - key: JAVA_OPTS
+        value: -Xmx512m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+    
+    # Health Check Configuration
+    healthCheckPath: /login
+    
+    # Auto-Deploy Configuration
+    autoDeploy: true
+    branch: main  # Change to your default branch if different
+    
+    # Domain Configuration
+    # After deployment, add your custom domain in Render dashboard:
+    # 1. Go to your service settings
+    # 2. Click "Custom Domains"
+    # 3. Add: pratiktech.cloud and www.pratiktech.cloud
+    # 4. Update your DNS with the provided CNAME/A records
+
+# =============================================================================
+# PostgreSQL Database
+# =============================================================================
+databases:
+  - name: novatech-db
+    databaseName: novatech_db
+    user: novatech_user
+    plan: starter  # Change to 'standard' for production (includes daily backups)
+    region: oregon  # Must match web service region for best performance
+    
+    # PostgreSQL Version
+    ipAllowList: []  # Empty = allow connections from Render services only
