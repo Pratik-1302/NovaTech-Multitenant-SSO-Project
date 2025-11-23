@@ -11,7 +11,6 @@ services:
   # =============================================================================
   - type: web
     name: novatech-sso
-    env: java  # Render uses 'env' not 'runtime' for Java
     plan: starter  # Change to 'standard' or higher for production workloads
     region: oregon  # Change to your preferred region (oregon, frankfurt, singapore, ohio)
     
