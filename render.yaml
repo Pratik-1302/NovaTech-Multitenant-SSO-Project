@@ -11,13 +11,11 @@ services:
   # =============================================================================
   - type: web
     name: novatech-sso
-    env: java  # Use 'env' instead of 'runtime' for Render Blueprints
+    env: docker  # Render requires 'docker' for Java applications in Blueprints
     plan: starter  # Change to 'standard' or higher for production workloads
     region: oregon  # Change to your preferred region (oregon, frankfurt, singapore, ohio)
     
-    # Build Configuration
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar target/service-app-0.0.1-SNAPSHOT.jar
+    # Build and start are handled by Dockerfile
     
     # Environment Variables
     envVars:
@@ -47,8 +45,9 @@ services:
         value: 20
       
       # Java Options for Production
+      # CRITICAL: On Starter plan (512MB RAM), Xmx must be <512MB to leave room for OS & Metaspace
       - key: JAVA_OPTS
-        value: -Xmx512m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+        value: -Xmx384m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
     
     # Health Check Configuration
     healthCheckPath: /login
@@ -56,13 +55,6 @@ services:
     # Auto-Deploy Configuration
     autoDeploy: true
     branch: main  # Change to your default branch if different
-    
-    # Domain Configuration
-    # After deployment, add your custom domain in Render dashboard:
-    # 1. Go to your service settings
-    # 2. Click "Custom Domains"
-    # 3. Add: pratiktech.cloud and www.pratiktech.cloud
-    # 4. Update your DNS with the provided CNAME/A records
 
 # =============================================================================
 # PostgreSQL Database
