@@ -46,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 # CRITICAL FIX: Transform Render's DATABASE_URL (postgresql://) to JDBC format (jdbc:postgresql://)
 # Render provides: postgresql://user:pass@host/db
 # Spring Boot needs: jdbc:postgresql://user:pass@host/db
-ENTRYPOINT ["sh", "-c", "export SPRING_DATASOURCE_URL=$(echo $DATABASE_URL | sed 's/^postgres.*:\\/\\//jdbc:postgresql:\\/\\//') && java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "export SPRING_DATASOURCE_URL=$(echo $DATABASE_URL | sed 's/^postgres:/jdbc:postgresql:/') && java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
