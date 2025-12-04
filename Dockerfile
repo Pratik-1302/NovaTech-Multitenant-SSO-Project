@@ -45,6 +45,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 
 # Copy entrypoint script
 COPY entrypoint.sh .
+# Fix line endings for Windows (CRLF -> LF)
+RUN sed -i 's/\r$//' entrypoint.sh
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
