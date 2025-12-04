@@ -41,15 +41,15 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     public UserService(UserRepository userRepository,
-                       TenantRepository tenantRepository,
-                       PasswordEncoder passwordEncoder) {
+            TenantRepository tenantRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.tenantRepository = tenantRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     // ======================================================
-    //          SPRING SECURITY AUTHENTICATION
+    // SPRING SECURITY AUTHENTICATION
     // ======================================================
 
     @Override
@@ -71,8 +71,7 @@ public class UserService implements UserDetailsService {
                     0L,
                     null,
                     "SUPERADMIN",
-                    "Super Administrator"
-            );
+                    "Super Administrator");
         }
 
         // ============================================================
@@ -83,7 +82,8 @@ public class UserService implements UserDetailsService {
         // ============================================================
         Long tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
-            // This should not happen if not superadmin, as TenantFilter should have caught it
+            // This should not happen if not superadmin, as TenantFilter should have caught
+            // it
             logger.warn("❌ Authentication failed: No Tenant ID found for email: {}", email);
             throw new UsernameNotFoundException("User not found: " + email);
         }
@@ -109,8 +109,7 @@ public class UserService implements UserDetailsService {
                     user.getId(),
                     tenantId,
                     userType,
-                    user.getFullName()
-            );
+                    user.getFullName());
         }
 
         // ============================================================
@@ -120,10 +119,9 @@ public class UserService implements UserDetailsService {
         throw new UsernameNotFoundException("User not found: " + email);
     }
 
-
     // ======================================================
-    //          USER MANAGEMENT (Tenant-Aware)
-    //          [ALL METHODS BELOW ARE UNCHANGED]
+    // USER MANAGEMENT (Tenant-Aware)
+    // [ALL METHODS BELOW ARE UNCHANGED]
     // ======================================================
 
     @Transactional(readOnly = true)
@@ -272,7 +270,7 @@ public class UserService implements UserDetailsService {
     }
 
     // ======================================================
-    //          UTILITY METHODS
+    // UTILITY METHODS
     // ======================================================
 
     @Transactional(readOnly = true)
