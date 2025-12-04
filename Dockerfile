@@ -34,6 +34,18 @@ COPY --from=build /app/target/service-app-0.0.1-SNAPSHOT.jar app.jar
 
 # Create a non-root user for security
 RUN addgroup -g 1001 -S appuser && adduser -u 1001 -S appuser -G appuser
+
+# Copy entrypoint script
+COPY entrypoint.sh .
+
+# Fix line endings for Windows (CRLF -> LF) - Must run as root before switching user
+RUN sed -i 's/\r$//' entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+# Set ownership of the application directory to appuser
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
 USER appuser
 
 # Expose port (Render will override with $PORT)
@@ -42,11 +54,5 @@ EXPOSE 8080
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/login || exit 1
-
-# Copy entrypoint script
-COPY entrypoint.sh .
-# Fix line endings for Windows (CRLF -> LF)
-RUN sed -i 's/\r$//' entrypoint.sh
-RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
