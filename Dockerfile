@@ -43,7 +43,8 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/login || exit 1
 
-# CRITICAL FIX: Transform Render's DATABASE_URL (postgresql://) to JDBC format (jdbc:postgresql://)
-# Render provides: postgresql://user:pass@host/db
-# Spring Boot needs: jdbc:postgresql://user:pass@host/db
-ENTRYPOINT ["sh", "-c", "export SPRING_DATASOURCE_URL=$(echo $DATABASE_URL | sed 's/^postgres.*:\\/\\//jdbc:postgresql:\\/\\//') && java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
+# Copy entrypoint script
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
