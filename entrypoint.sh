@@ -1,26 +1,35 @@
 #!/bin/sh
 set -e
 
-# Debug: Print original URL (masked for security if needed, but here we need to see the prefix)
-# We won't print the full URL to avoid leaking credentials in logs, just the transformation result structure.
-
 echo "Configuring Database URL..."
 
 if [ -z "$DATABASE_URL" ]; then
     echo "WARNING: DATABASE_URL is not set!"
 else
-    # Transform postgres:// or postgresql:// to jdbc:postgresql://
-    # We use | as delimiter to avoid escaping slashes
-    export SPRING_DATASOURCE_URL=$(echo "$DATABASE_URL" | sed 's|^postgres.*://|jdbc:postgresql://|')
+    # Parse DATABASE_URL which is in format: postgres://user:pass@host:port/db
     
-    echo "URL Transformation complete."
-    # Check if transformation actually happened
-    if echo "$SPRING_DATASOURCE_URL" | grep -q "^jdbc:postgresql://"; then
-        echo "SUCCESS: SPRING_DATASOURCE_URL starts with jdbc:postgresql://"
-    else
-        echo "ERROR: SPRING_DATASOURCE_URL does not start with jdbc:postgresql://"
-        echo "Value starts with: $(echo "$SPRING_DATASOURCE_URL" | cut -c1-20)..."
-    fi
+    # 1. Remove the protocol prefix (postgres:// or postgresql://)
+    CLEAN_URL=$(echo "$DATABASE_URL" | sed -e 's/^postgres:\/\///' -e 's/^postgresql:\/\///')
+
+    # 2. Extract User and Password (everything before the @)
+    USER_PASS=$(echo "$CLEAN_URL" | cut -d@ -f1)
+    
+    # 3. Extract Host, Port and DB (everything after the @)
+    HOST_DB=$(echo "$CLEAN_URL" | cut -d@ -f2)
+
+    # 4. Split User and Password
+    DB_USER=$(echo "$USER_PASS" | cut -d: -f1)
+    DB_PASS=$(echo "$USER_PASS" | cut -d: -f2)
+
+    # 5. Construct valid JDBC URL
+    JDBC_URL="jdbc:postgresql://${HOST_DB}"
+    
+    echo "Exporting database configuration..."
+    export SPRING_DATASOURCE_URL="$JDBC_URL"
+    export SPRING_DATASOURCE_USERNAME="$DB_USER"
+    export SPRING_DATASOURCE_PASSWORD="$DB_PASS"
+    
+    echo "Database connection configured successfully."
 fi
 
 # Run the application
